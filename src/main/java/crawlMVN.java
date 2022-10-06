@@ -24,20 +24,44 @@ public class crawlMVN {
     //统计库的总数
     private static int sum = 0;
     // 用于存类目地址及其软件包数目
-    private static HashMap<String, Integer> subLinks = new HashMap<>();
+    private static HashMap<String, Integer> subLinks;
     //<groupId, artifactId,libraryName>三元组 最后以表格形式输出
     //key为<groupId, artifactId>，因为libraryName可能同名
-    private static HashMap<String[], String> record = new HashMap<>();
+    private static HashMap<String[], String> record;
     //输出的excel表格的路径
     private static String fileName = "output.xls";
 
     public static void main(String[] args) {
         excelUtil excelUtil = new excelUtil();
-        //先创建一个表格
+        //先创建一个总的结果表格，最后所有数据在filename里
         excelUtil.createExcel(fileName);
+
+        for (int i = 0; i < 3; i++) {
+            int begin = i + 5 * i;
+            int end = 5 + 5 * i;
+            try {
+                //每次爬取五页
+                //1-5
+                //6-10
+                //11-15
+                getFromMvn(begin, end);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                System.out.println("爬取第" + begin + "至" + end + "页时中断，请重试！");
+                interruptHandle(begin, end);
+            }
+        }
+    }
+
+    /**
+     * 重新爬取begin -> end页的软件包
+     *
+     * @param begin 起始页
+     * @param end   终止页
+     */
+    private static void interruptHandle(int begin, int end) {
         try {
-            //从第一页到第15页
-            getFromMvn(1, 15);
+            getFromMvn(begin, end);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -51,11 +75,12 @@ public class crawlMVN {
      * @throws InterruptedException
      */
     private static void getFromMvn(int begin, int end) throws InterruptedException {
-        //CountDownLatch可以使一个获多个线程等待其他线程各自执行完毕后再执行。
-        //15个页面需要爬取
+        //每次爬取时初始化subLinks 和 record
+        subLinks = new HashMap<>();
+        record = new HashMap<>();
         int pageNum = end - begin + 1;
         final CountDownLatch latch = new CountDownLatch(pageNum);//使用java并发库concurrent
-        //启用15个线程
+        //启用end-begin+1个线程
         for (int i = begin; i <= end; i++) {
             int finalI = i;
             new Thread(new Runnable() {
@@ -105,7 +130,7 @@ public class crawlMVN {
                             }
                         }
                     } else {
-                        System.out.println("页面响应失败！");
+                        System.out.println("页面" + finalI + "响应失败！请重试！");
                     }
                     latch.countDown();//让latch中的数值减一
                 }
@@ -113,16 +138,15 @@ public class crawlMVN {
         }
         //主线程
         latch.await();//阻塞当前线程直到latch中数值为零才执行
-        System.out.println("共统计" + subLinks.size() + "个类目");
+        System.out.println("页面" + begin + "至" + end + "共统计" + subLinks.size() + "个类目");
         System.out.println("库的总数为：" + sum);
         System.out.println("-------------");
-        //一共149个类目
-        if (subLinks.size() == 149) {
-            System.out.println("接下来爬取子链接");
-            getFromSubLinks();
-        } else {
-            System.out.println("爬取不完全，请重试！");
-        }
+        System.out.println("接下来爬取子链接");
+        getFromSubLinks();
+        //爬取完子链接后
+        //对begin -> end页爬取的软件包进行备份
+        String fileTmp = ".\\src\\result\\" + begin + "To" + end + ".xls";
+        new excelUtil().backUpExcel(fileTmp, record);
     }
 
     /**
@@ -228,68 +252,6 @@ public class crawlMVN {
         }
         latch.await();
 
-    }
-
-
-    /**
-     * 在运行完爬取后，把所有数据输入到excel中
-     * 选择舍弃该方法，改用每爬到一条数据就追加到表格后——>excelUtil
-     *
-     * @param src
-     */
-    private static void saveAsExcel(String src) {
-//        System.out.println("数据输出到Excel...");
-        // 定义一个新的工作簿
-        XSSFWorkbook wb = new XSSFWorkbook();
-        // 创建一个Sheet页
-        XSSFSheet sheet = wb.createSheet("First sheet");
-        //设置行高
-        sheet.setDefaultRowHeight((short) (2 * 256));
-        //设置列宽
-        sheet.setColumnWidth(0, 4000);
-        sheet.setColumnWidth(1, 4000);
-        sheet.setColumnWidth(2, 4000);
-        XSSFFont font = wb.createFont();
-        font.setFontName("宋体");
-        font.setFontHeightInPoints((short) 16);
-        //获得表格第一行
-        XSSFRow row = sheet.createRow(0);
-        //根据需要给第一行每一列设置标题
-        XSSFCell cell = row.createCell(0);
-        cell.setCellValue("libraryName");
-        cell = row.createCell(1);
-        cell.setCellValue("groupId");
-        cell = row.createCell(2);
-        cell.setCellValue("artifactId");
-        XSSFRow rows;
-        XSSFCell cells;
-        int i = 0;
-        //遍历record hashmap 每一条数据放在excel中一行的单元格里
-        for (Map.Entry<String[], String> entry : record.entrySet()) {
-            // 在这个sheet页里创建一行
-            rows = sheet.createRow(i + 1);
-            String[] idInfo = entry.getKey();
-            String libraryName = entry.getValue();
-            String groupId = idInfo[0];
-            String artifactId = idInfo[1];
-            // 该行创建一个单元格,在该单元格里设置值
-            cells = rows.createCell(0);
-            cells.setCellValue(libraryName);
-            cells = rows.createCell(1);
-            cells.setCellValue(groupId);
-            cells = rows.createCell(2);
-            cells.setCellValue(artifactId);
-        }
-        //保存至文件目录
-        try {
-            File file = new File(src);
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            wb.write(fileOutputStream);
-            wb.close();
-            fileOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 }
