@@ -1,5 +1,4 @@
 import okhttp3.Response;
-import org.apache.poi.xssf.usermodel.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,8 +7,6 @@ import util.HttpUtil;
 import util.RandomUtil;
 import util.excelUtil;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +30,7 @@ public class crawlMVN {
 
     public static void main(String[] args) {
         excelUtil excelUtil = new excelUtil();
-        //先创建一个总的结果表格，最后所有数据在filename里
+        //先创建一个总的结果表格，最后所有数据在output.xls里
         excelUtil.createExcel(fileName);
 
         for (int i = 0; i < 3; i++) {
@@ -179,8 +176,6 @@ public class crawlMVN {
         latch.await();
         System.out.println("-------------");
         System.out.println("子链接爬取完毕，爬取程序完成");
-//        System.out.println("----数据输出到Excel----");
-//        saveAsExcel("output.xls");
     }
 
     /**

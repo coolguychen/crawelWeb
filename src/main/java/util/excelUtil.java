@@ -54,11 +54,13 @@ public class excelUtil {
      * @param idInfo
      */
     public static void appendToExcel(String fileName, String libraryName, String[] idInfo) {
+        //输入流和输出流
         FileInputStream fis = null;
         FileOutputStream fos = null;
+        XSSFWorkbook workbook = null;
         try {
             fis = new FileInputStream(fileName);
-            XSSFWorkbook workbook = new XSSFWorkbook(fis);
+            workbook = new XSSFWorkbook(fis);
             //获取到第1个sheet，在里面追加
             XSSFSheet sheet = workbook.getSheetAt(0);
             if (sheet != null) {
@@ -78,26 +80,31 @@ public class excelUtil {
                 cells.setCellValue(artifactId);
             }
             fos = new FileOutputStream(fileName);
-            //写入
+            //写入工作簿
             workbook.write(fos);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try {
+
+            try{
+                //关闭流
                 if (fis != null) {
                     fis.close();
                 }
                 if (fos != null) {
                     fos.close();
                 }
-            } catch (IOException e) {
-                //ignore
+                //关闭workbook
+                workbook.close();
+
+            }catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
 
     public static void backUpExcel(String src, HashMap<String[], String> record) {
-        System.out.println("数据输出到Excel...");
+        System.out.println("数据输出到Excel："+ src);
         // 定义一个新的工作簿
         XSSFWorkbook wb = new XSSFWorkbook();
         // 创建一个Sheet页
@@ -150,6 +157,5 @@ public class excelUtil {
             e.printStackTrace();
         }
     }
-
 
 }
