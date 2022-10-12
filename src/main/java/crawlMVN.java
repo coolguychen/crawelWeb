@@ -142,7 +142,7 @@ public class crawlMVN {
         getFromSubLinks();
         //爬取完子链接后
         //对begin -> end页爬取的软件包进行备份
-        String fileTmp = ".\\src\\result\\" + begin + "To" + end + ".xls";
+        String fileTmp =  begin + "To" + end + ".xls";
         new excelUtil().backUpExcel(fileTmp, record);
     }
 
@@ -236,6 +236,7 @@ public class crawlMVN {
                             String[] idPair = {groupId, artifactId};
                             record.put(idPair, libraryName); // <libraryName, groupId, artifactId> 加入进哈希表
                             //加入表格中
+                            // TODO: 12/10/2022 断点续传 
                             new excelUtil().appendToExcel(fileName, libraryName, idPair);
                         }
                     } else {

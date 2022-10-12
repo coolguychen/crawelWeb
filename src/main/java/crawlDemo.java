@@ -139,7 +139,7 @@ public class crawlDemo {
             System.out.println("接下来爬取子链接");
             getFromSubLinks();
             //对该页爬取的软件包进行备份
-            String fileTmp = ".\\src\\backup\\page" + pageNum + ".xls";
+            String fileTmp = "page" + pageNum + ".xls";
             new excelUtil().backUpExcel(fileTmp,hashMap);
         }
         else{
@@ -226,6 +226,7 @@ public class crawlDemo {
                             String[] idPair = {groupId, artifactId};
                             hashMap.put(idPair, libraryName);
                             //加入总的表格中
+                            // TODO: 12/10/2022 断点续传 
                             new excelUtil().appendToExcel(fileName, libraryName, idPair);
                         }
                     } else {
