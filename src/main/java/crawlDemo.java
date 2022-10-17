@@ -194,7 +194,7 @@ public class crawlDemo {
     private static void crawlCategory(String address, int num) throws InterruptedException {
         //页面数：
         int pageNum = (int) Math.ceil((double) num / 10); //一页十个软件包, 向上取整
-        // TODO: 17/10/2022 注意这里页数最多十五页，需要处理一下
+//         TODO: 17/10/2022 注意这里页数最多十五页，需要处理一下
         //对每个页面进行爬取
         for (int i = 1; i <= pageNum; i++) {
             crawlCategoryByPage(address, i);
@@ -250,7 +250,6 @@ public class crawlDemo {
                         String[] idPair = {groupId, artifactId};
                         hashMap.put(idPair, libraryName);
                         //加入总的表格中
-                        // TODO: 12/10/2022 断点续传
                         new excelUtil().appendToExcel(fileName, libraryName, idPair);
                     }
                     response.close(); //关闭请求
