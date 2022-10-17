@@ -95,8 +95,9 @@ public class excelUtil {
                     fos.close();
                 }
                 //关闭workbook
-                workbook.close();
-
+                if(workbook != null) {
+                    workbook.close();
+                }
             }catch (IOException e) {
                 e.printStackTrace();
             }
