@@ -44,30 +44,16 @@ public class crawlDemo {
         //先创建一个总的表格
         excelUtil.createExcel(fileName);
         //demo:
-        for (int i = 1; i <= 1; i++) {
+        for (int i = 1; i <= 15; i++) {
             try {
                 getFromMvn(i);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 System.out.println("爬取第" + i + "页时中断，请重试！");
-                interruptHandle(i);
+
             }
         }
 
-    }
-
-    /**
-     * 中断处理
-     *
-     * @param i
-     */
-    private static void interruptHandle(int i) {
-        //重新爬取第i页
-        try {
-            getFromMvn(i);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -153,9 +139,7 @@ public class crawlDemo {
             new excelUtil().backUpExcel(fileTmp, hashMap);
         } else {
             System.out.println("爬取不完全，请重试！");
-            interruptHandle(pageNum);
         }
-
     }
 
     public static void getFromSubLinks() throws InterruptedException {
